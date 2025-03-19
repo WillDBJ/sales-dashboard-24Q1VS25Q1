@@ -1,0 +1,1352 @@
+# sales-dashboard-24Q1VS25Q1<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>销售数据可视化看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .data-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            border-left: 4px solid #3498db;
+        }
+        .data-info h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .data-info p {
+            margin: 5px 0;
+        }
+        .data-info strong {
+            font-weight: bold;
+        }
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        .chart-container {
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+        }
+        .chart-title {
+            margin-top: 0;
+            text-align: center;
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .chart-area {
+            width: 100%;
+            height: 400px;
+        }
+        .data-table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+        }
+        .table-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+            text-align: center;
+        }
+        td:first-child, th:first-child {
+            text-align: left;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .positive {
+            color: #27ae60;
+        }
+        .negative {
+            color: #e74c3c;
+        }
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 20px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        @media (max-width: 768px) {
+            .control-panel {
+                flex-direction: column;
+            }
+            .control-group {
+                width: 100%;
+            }
+        }
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            background-color: #f8f9fa;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            border-radius: 8px 8px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            background-color: white;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .channel-type {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+        .summary-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .summary-item {
+            text-align: center;
+            padding: 10px;
+            min-width: 150px;
+        }
+        .summary-label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .summary-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .summary-change {
+            font-size: 15px;
+            margin-top: 5px;
+        }
+        .bold-row {
+            font-weight: bold;
+        }
+        .period-label {
+            font-size: 12px;
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .series-checkbox {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .series-selector {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .series-label {
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .series-label input {
+            margin-right: 5px;
+        }
+        .channel-detail-chart {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>销售数据分析看板</h1>
+        </div>
+
+        <!-- 数据信息说明 -->
+        <div class="data-info">
+            <h3>数据说明：</h3>
+            <p><strong>1. 取数时间</strong>：</p>
+            <p>24年数据为 24年1月1日--24年3月19日</p>
+            <p>25年数据为 25年1月1日-- 25年3月18日上午</p>
+            <p><strong>2. 系列说明</strong>：</p>
+            <p>视力宝，90s按1.5倍折算成60s（即视力宝 =视力宝 60s+视力宝 90s*1.5 ），系列以及汇总均不包含视力宝 10s</p>
+            <p>儿童系列，不含 视力宝和软糖豆</p>
+            <p>成人系列，不含亮眼康和中老年护眼</p>
+            <p>护眼系列，包含所有护眼产品</p>
+            <p><strong>数据来源</strong>：</p>
+            <p>取自供应链周数据</p>
+        </div>
+
+        <!-- 各渠道销量总表 -->
+        <div class="data-table-container">
+            <h3 class="table-title">各渠道销量汇总</h3>
+            <div id="summary-table"></div>
+        </div>
+
+        <!-- 销售趋势控制面板 -->
+        <h3 class="section-title">销售趋势分析</h3>
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="trend-channel-select">渠道</label>
+                <select id="trend-channel-select">
+                    <option value="渠道汇总">渠道汇总</option>
+                    <option value="天猫">天猫</option>
+                    <option value="京东 POP">京东 POP</option>
+                    <option value="京东自营">京东自营</option>
+                    <option value="唯品会">唯品会</option>
+                    <option value="阿里健康">阿里健康</option>
+                    <option value="TDI">TDI</option>
+                    <option value="PDD">PDD</option>
+                    <option value="中外运">中外运</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 系列选择器 -->
+        <div class="series-selector" id="trend-series-selector">
+            <!-- 系列复选框将通过JavaScript动态生成 -->
+        </div>
+
+        <!-- 销售趋势图表 -->
+        <div class="chart-container">
+            <h3 class="chart-title">24年/25年销售趋势对比</h3>
+            <div class="chart-area" id="trend-chart"></div>
+        </div>
+
+        <!-- 同比分析控制面板 -->
+        <h3 class="section-title">同比分析</h3>
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="compare-channel-select">渠道</label>
+                <select id="compare-channel-select">
+                    <option value="渠道汇总">渠道汇总</option>
+                    <option value="天猫">天猫</option>
+                    <option value="京东 POP">京东 POP</option>
+                    <option value="京东自营">京东自营</option>
+                    <option value="唯品会">唯品会</option>
+                    <option value="阿里健康">阿里健康</option>
+                    <option value="TDI">TDI</option>
+                    <option value="PDD">PDD</option>
+                    <option value="中外运">中外运</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="compare-product-select">产品系列</label>
+                <select id="compare-product-select">
+                    <option value="渠道合计">渠道合计</option>
+                    <option value="视力宝（60s+90s 折算成 60s）">视力宝</option>
+                    <option value="护眼系列">护眼系列</option>
+                    <option value="儿童系列（除儿童护眼/软糖豆）">儿童系列</option>
+                    <option value="成人系列（除成人/中老年护眼）">成人系列</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 同比分析汇总信息 -->
+        <div class="summary-info" id="compare-summary">
+            <!-- 将动态生成汇总信息 -->
+        </div>
+
+        <!-- 同比分析图表 -->
+        <div class="chart-container">
+            <h3 class="chart-title">24年/25年同比分析</h3>
+            <div class="chart-area" id="compare-chart"></div>
+            <div id="period-labels"></div>
+        </div>
+
+        <!-- 渠道详细分析 -->
+        <h3 class="section-title">渠道详细分析</h3>
+        <div class="tab-container">
+            <div class="tabs" id="channel-tabs">
+                <!-- 渠道标签会动态生成 -->
+            </div>
+            
+            <div id="channel-tab-contents">
+                <!-- 渠道内容会动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据初始化
+        const rawData = [
+            ["渠道", "分类", "24年1.1-1.9", "24年1.10-1.16", "24年1.17-1.24", "24年1.25-1.30", "24年1.31-2.6", "24年2.7-2.20", "24年2.21-2.27", "24年2.28-3.5", "24年3.6-3.12", "24年3.13-3.19", "24 年 1.1-3.19", "25年1.1-1.7", "25年1.7-1.14", "25年1.14-1.21", "25年1.21-2.4", "25年2.4-2.11", "25年2.11-2.18", "25年2.18-2.25", "25年2.25-3.4", "25年3.4-3.11", "25年3.11-3.18", "25 年 1.1-3.18"],
+            ["天猫", "渠道合计", 692, 577, 1243, 953, 699, 1156, 1343, 1155, 1157, 616, 9591, 674, 536, 607, 565, 664, 867, 714, 1076, 1158, 570, 7431],
+            ["天猫", "视力宝（60s+90s 折算成 60s）", 421, 343, 841, 626, 478, 741, 997, 860, 849, 325, 6480, 368, 270, 272, 213, 308, 441, 330, 548, 590, 274, 3611],
+            ["天猫", "护眼系列", 613, 512, 1115, 835, 612, 971, 1244, 1098, 1115, 494, 8608, 548, 422, 468, 489, 541, 662, 511, 792, 850, 441, 5721],
+            ["天猫", "儿童系列（除儿童护眼/软糖豆）", 67, 65, 154, 102, 58, 137, 102, 99, 103, 122, 1009, 34, 45, 61, 39, 73, 89, 52, 107, 101, 51, 652],
+            ["天猫", "成人系列（除成人/中老年护眼）", 14, 3, 3, 30, 45, 81, 48, 0, 2, 5, 231, 1, 6, 1, 0, 0, 4, 32, 12, 0, 1, 57],
+            
+            ["京东 POP", "渠道合计", 423, 337, 484, 364, 321, 547, 528, 498, 746, 608, 4856, 225, 170, 195, 305, 408, 426, 340, 297, 451, 310, 3127],
+            ["京东 POP", "视力宝（60s+90s 折算成 60s）", 215, 201, 339, 215, 220, 283, 250, 288, 486, 324, 2819, 106, 72, 87, 127, 173, 173, 116, 115, 165, 124, 1255],
+            ["京东 POP", "护眼系列", 301, 260, 433, 280, 265, 391, 363, 382, 637, 396, 3706, 179, 129, 164, 207, 301, 314, 251, 215, 323, 214, 2294],
+            ["京东 POP", "儿童系列（除儿童护眼/软糖豆）", 119, 91, 53, 45, 50, 130, 152, 129, 117, 94, 980, 30, 32, 20, 61, 71, 83, 45, 48, 74, 42, 506],
+            ["京东 POP", "成人系列（除成人/中老年护眼）", 28, 12, 44, 52, 28, 51, 39, 33, 47, 159, 493, 0, 1, 0, 8, 20, 7, 22, 3, 23, 24, 108],
+            
+            ["京东自营", "渠道合计", 984, 912, 2113, 996, 979, 1470, 1179, 1297, 1106, 777, 11813, 405, 491, 642, 1070, 495, 634, 909, 848, 842, 597, 6933],
+            ["京东自营", "视力宝（60s+90s 折算成 60s）", 889, 702, 1776, 767, 889, 1355, 1063, 1144, 998, 731, 10312, 283, 325, 488, 757, 423, 570, 795, 596, 735, 548, 5517],
+            ["京东自营", "护眼系列", 1006, 825, 1929, 872, 982, 1582, 1276, 1383, 1216, 885, 11954, 371, 445, 676, 1006, 474, 651, 891, 753, 847, 602, 6713],
+            ["京东自营", "儿童系列（除儿童护眼/软糖豆）", 79, 100, 183, 124, 50, 86, 77, 105, 63, 39, 906, 33, 28, 56, 140, 46, 64, 113, 106, 81, 80, 747],
+            ["京东自营", "成人系列（除成人/中老年护眼）", 0, 4, 1, 0, 1, 0, 0, 4, 6, 3, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            
+            ["唯品会", "渠道合计", 602, 487, 837, 440, 491, 987, 1604, 1296, 1250, 1287, 9281, 331, 352, 312, 459, 410, 458, 388, 522, 518, 367, 4117],
+            ["唯品会", "视力宝（60s+90s 折算成 60s）", 359, 112, 454, 209, 258, 533, 1203, 732, 653, 924, 5437, 242, 242, 232, 357, 353, 389, 270, 423, 380, 229, 3115],
+            ["唯品会", "护眼系列", 483, 201, 545, 301, 304, 691, 1370, 880, 872, 1018, 6665, 268, 261, 241, 388, 374, 407, 290, 447, 431, 274, 3379],
+            ["唯品会", "儿童系列（除儿童护眼/软糖豆）", 87, 165, 165, 89, 112, 242, 192, 344, 304, 222, 1922, 57, 69, 48, 80, 57, 91, 83, 97, 91, 88, 761],
+            ["唯品会", "成人系列（除成人/中老年护眼）", 32, 59, 49, 16, 33, 54, 42, 72, 74, 47, 478, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            
+            ["阿里健康", "渠道合计", 449, 350, 1106, 325, 257, 663, 611, 669, 921, 671, 6022, 88, 347, 168, 136, 165, 181, 130, 154, 344, 127, 1840],
+            ["阿里健康", "视力宝（60s+90s 折算成 60s）", 327, 228, 978, 267, 216, 536, 467, 544, 869, 644, 5073, 63, 303, 132, 113, 139, 167, 101, 127, 263, 92, 1498],
+            ["阿里健康", "护眼系列", 417, 309, 1062, 311, 252, 626, 615, 691, 1005, 765, 6050, 82, 337, 158, 135, 159, 173, 118, 139, 310, 117, 1726],
+            ["阿里健康", "儿童系列（除儿童护眼/软糖豆）", 38, 23, 35, 14, 9, 27, 16, 14, 29, 16, 221, 2, 8, 5, 3, 4, 9, 10, 10, 16, 4, 71],
+            ["阿里健康", "成人系列（除成人/中老年护眼）", 0, 1, 3, 3, 0, 7, 2, 6, 1, 3, 26, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+            
+            ["TDI", "渠道合计", 190, 179, 545, 201, 22, 566, 1223, 1015, 1429, 829, 6199, 68, 204, 159, 180, 363, 458, 267, 224, 342, 210, 2475],
+            ["TDI", "视力宝（60s+90s 折算成 60s）", 159, 179, 527, 200, 20, 541, 1191, 544, 1207, 518, 5084, 53, 200, 137, 134, 304, 387, 225, 179, 319, 172, 2109],
+            ["TDI", "护眼系列", 190, 179, 545, 201, 29, 584, 1269, 725, 1335, 789, 5844, 57, 204, 141, 141, 317, 404, 236, 181, 329, 181, 2190],
+            ["TDI", "儿童系列（除儿童护眼/软糖豆）", 0, 0, 0, 0, 0, 2, 0, 190, 65, 81, 338, 9, 5, 2, 8, 5, 4, 4, 4, 0, 3, 44],
+            ["TDI", "成人系列（除成人/中老年护眼）", 0, 0, 0, 0, 0, 0, 0, 151, 33, 11, 195, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            
+            ["PDD", "渠道合计", null, null, null, null, null, null, null, null, null, null, null, 572, 592, 540, 145, 970, 777, 883, 934, 795, 723, 6931],
+            ["PDD", "视力宝（60s+90s 折算成 60s）", null, null, null, null, null, null, null, null, null, null, null, 48, 38, 40, 15, 77, 71, 55, 67, 78, 67, 553],
+            ["PDD", "护眼系列", null, null, null, null, null, null, null, null, null, null, null, 206, 177, 194, 43, 396, 342, 287, 296, 318, 292, 2548],
+            ["PDD", "儿童系列（除儿童护眼/软糖豆）", null, null, null, null, null, null, null, null, null, null, null, 179, 215, 192, 46, 314, 281, 543, 443, 403, 472, 3088],
+            ["PDD", "成人系列（除成人/中老年护眼）", null, null, null, null, null, null, null, null, null, null, null, 72, 98, 95, 28, 140, 129, 107, 117, 104, 59, 949],
+            
+            ["中外运", "渠道合计", 2398, 1478, 2059, 855, 468, 650, 1330, 1774, 1153, 1991, 14156, 265, 287, 230, 80, 602, 889, 1055, 500, 851, 306, 5065],
+            ["中外运", "视力宝（60s+90s 折算成 60s）", 1599, 781, 1465, 291, 233, 268, 751, 631, 582, 766, 7365, 101, 78, 52, 33, 133, 137, 355, 112, 257, 77, 1332],
+            ["中外运", "护眼系列", 1844, 954, 1798, 432, 340, 379, 1005, 1211, 882, 1388, 10231, 132, 149, 104, 57, 213, 240, 677, 273, 579, 148, 2569],
+            ["中外运", "儿童系列（除儿童护眼/软糖豆）", 520, 282, 358, 153, 106, 214, 275, 349, 257, 366, 2880, 59, 42, 56, 8, 88, 160, 268, 160, 211, 53, 1105],
+            ["中外运", "成人系列（除成人/中老年护眼）", 42, 54, 35, 31, 30, 78, 85, 44, 36, 41, 476, 23, 44, 28, 15, 69, 61, 91, 47, 66, 69, 513],
+            
+            ["渠道汇总", "渠道合计", 5738, 4320, 8387, 4134, 3237, 6039, 7818, 7704, 7762, 6779, 61918, 2628, 2979, 2853, 2940, 4077, 4690, 4686, 4555, 5301, 3210, 37919],
+            ["渠道汇总", "视力宝（60s+90s 折算成 60s）", 3968, 2545, 6379, 2575, 2312, 4256, 5920, 4742, 5643, 4231, 42569, 1261, 1526, 1438, 1747, 1908, 2333, 2246, 2164, 2785, 1581, 18987],
+            ["渠道汇总", "护眼系列", 4853, 3239, 7426, 3232, 2782, 5223, 7140, 6369, 7061, 5734, 53057, 1840, 2122, 2144, 2464, 2773, 3191, 3260, 3093, 3985, 2267, 27137],
+            ["渠道汇总", "儿童系列（除儿童护眼/软糖豆）", 910, 726, 948, 527, 385, 838, 814, 1230, 938, 940, 8256, 403, 444, 440, 385, 658, 781, 1118, 975, 977, 793, 6974],
+            ["渠道汇总", "成人系列（除成人/中老年护眼）", 116, 133, 135, 132, 137, 271, 216, 310, 199, 269, 1918, 98, 149, 124, 51, 229, 201, 252, 179, 193, 153, 1629]
+        ];
+
+        // 定义C端和B端渠道
+        const cChannels = ["天猫", "京东 POP", "PDD"];
+        const bChannels = ["京东自营", "唯品会", "阿里健康", "TDI", "中外运"];
+
+        // 系列名称映射
+        const seriesNameMap = {
+            "视力宝（60s+90s 折算成 60s）": "视力宝",
+            "护眼系列": "护眼系列",
+            "儿童系列（除儿童护眼/软糖豆）": "儿童系列",
+            "成人系列（除成人/中老年护眼）": "成人系列"
+        };
+
+        // 用于保存用户在趋势分析中选择的系列
+        let selectedSeriesState = {
+            "视力宝（60s+90s 折算成 60s）-2024": true,
+            "视力宝（60s+90s 折算成 60s）-2025": true,
+            "护眼系列-2024": false,
+            "护眼系列-2025": false,
+            "儿童系列（除儿童护眼/软糖豆）-2024": false,
+            "儿童系列（除儿童护眼/软糖豆）-2025": false,
+            "成人系列（除成人/中老年护眼）-2024": false,
+            "成人系列（除成人/中老年护眼）-2025": false
+        };
+
+        // 获取周期标签
+        const getPeriodLabels = () => {
+            const header = rawData[0];
+            const period2024 = header.slice(2, 12); // 24年1.1-1.9 到 24年3.13-3.19
+            const period2025 = header.slice(12, 22); // 25年1.1-1.7 到 25年3.11-3.18
+            
+            return {
+                period2024,
+                period2025
+            };
+        };
+
+        // 处理数据
+        const processData = () => {
+            // 提取标题行
+            const headerRow = rawData[0];
+            const data2024 = headerRow.slice(2, 13);
+            const data2025 = headerRow.slice(13, 24);
+            
+            // 处理数据行
+            const processedData = [];
+            
+            for (let i = 1; i < rawData.length; i++) {
+                const row = rawData[i];
+                const channel = row[0];
+                const category = row[1];
+                
+                const values2024 = row.slice(2, 13).map(v => v === null ? null : Number(v));
+                const values2025 = row.slice(13, 24).map(v => v === null ? null : Number(v));
+                
+                processedData.push({
+                    channel,
+                    category,
+                    values2024,
+                    values2025,
+                    headers2024: data2024,
+                    headers2025: data2025,
+                    channelType: cChannels.includes(channel) ? "C端" : "B端"
+                });
+            }
+            
+            return processedData;
+        };
+
+        const data = processData();
+        
+        // 1. 渲染渠道汇总表格 - 将渠道汇总移到最顶部并加粗
+        const renderSummaryTable = () => {
+            const tableDiv = document.getElementById('summary-table');
+            
+            // 获取渠道汇总数据
+            const channelSummaries = [];
+            const uniqueChannels = [...new Set(data.map(d => d.channel))];
+            
+            // 计算总销量总和（用于计算占比）
+            const total2024 = data.find(d => d.channel === "渠道汇总" && d.category === "渠道合计").values2024[10];
+            const total2025 = data.find(d => d.channel === "渠道汇总" && d.category === "渠道合计").values2025[10];
+            
+            // 计算C端和B端总量
+            let cTotal2024 = 0;
+            let cTotal2025 = 0;
+            let bTotal2024 = 0;
+            let bTotal2025 = 0;
+            
+            for (const channel of uniqueChannels) {
+                if (channel === "渠道汇总") continue;
+                
+                const channelData = data.find(d => d.channel === channel && d.category === "渠道合计");
+                if (channelData) {
+                    const sales2024 = channelData.values2024[10] || 0;
+                    const sales2025 = channelData.values2025[10] || 0;
+                    
+                    if (cChannels.includes(channel)) {
+                        cTotal2024 += sales2024;
+                        cTotal2025 += sales2025;
+                    } else {
+                        bTotal2024 += sales2024;
+                        bTotal2025 += sales2025;
+                    }
+                }
+            }
+            
+            // 添加渠道汇总
+            const totalData = data.find(d => d.channel === "渠道汇总" && d.category === "渠道合计");
+            if (totalData) {
+                channelSummaries.push({
+                    channel: "渠道汇总",
+                    channelType: "",
+                    sales2024: totalData.values2024[10],
+                    sales2025: totalData.values2025[10],
+                    yoyChange: totalData.values2025[10] - totalData.values2024[10],
+                    yoyRate: ((totalData.values2025[10] - totalData.values2024[10]) / totalData.values2024[10] * 100).toFixed(2) + "%",
+                    share2024: "100%",
+                    share2025: "100%",
+                    shareChange: "0%",
+                    isTotal: true
+                });
+            }
+            
+            // 添加C端和B端总量
+            const cShare2024 = ((cTotal2024 / total2024) * 100).toFixed(2);
+            const cShare2025 = ((cTotal2025 / total2025) * 100).toFixed(2);
+            const cShareChange = (cShare2025 - cShare2024).toFixed(2);
+            
+            channelSummaries.push({
+                channel: "C端汇总",
+                channelType: "C端",
+                isType: true,
+                sales2024: cTotal2024,
+                sales2025: cTotal2025,
+                yoyChange: cTotal2025 - cTotal2024,
+                yoyRate: cTotal2024 ? (((cTotal2025 - cTotal2024) / cTotal2024) * 100).toFixed(2) + "%" : "-",
+                share2024: cShare2024 + "%",
+                share2025: cShare2025 + "%",
+                shareChange: cShareChange + "%"
+            });
+            
+            const bShare2024 = ((bTotal2024 / total2024) * 100).toFixed(2);
+            const bShare2025 = ((bTotal2025 / total2025) * 100).toFixed(2);
+            const bShareChange = (bShare2025 - bShare2024).toFixed(2);
+            
+            channelSummaries.push({
+                channel: "B端汇总",
+                channelType: "B端",
+                isType: true,
+                sales2024: bTotal2024,
+                sales2025: bTotal2025,
+                yoyChange: bTotal2025 - bTotal2024,
+                yoyRate: bTotal2024 ? (((bTotal2025 - bTotal2024) / bTotal2024) * 100).toFixed(2) + "%" : "-",
+                share2024: bShare2024 + "%",
+                share2025: bShare2025 + "%",
+                shareChange: bShareChange + "%"
+            });
+            
+            // 添加各渠道数据
+            for (const channel of uniqueChannels) {
+                if (channel === "渠道汇总") continue;
+                
+                const channelData = data.find(d => d.channel === channel && d.category === "渠道合计");
+                if (channelData) {
+                    const sales2024 = channelData.values2024[10] || 0;
+                    const sales2025 = channelData.values2025[10] || 0;
+                    const yoyChange = sales2025 - sales2024;
+                    const yoyRate = sales2024 ? ((yoyChange / sales2024) * 100).toFixed(2) + "%" : "-";
+                    const share2024 = sales2024 ? ((sales2024 / total2024) * 100).toFixed(2) : 0;
+                    const share2025 = sales2025 ? ((sales2025 / total2025) * 100).toFixed(2) : 0;
+                    const shareChange = (share2025 - share2024).toFixed(2);
+                    
+                    channelSummaries.push({
+                        channel,
+                        channelType: cChannels.includes(channel) ? "C端" : "B端",
+                        sales2024,
+                        sales2025,
+                        yoyChange,
+                        yoyRate,
+                        share2024: share2024 + "%",
+                        share2025: share2025 + "%",
+                        shareChange: shareChange + "%"
+                    });
+                }
+            }
+            
+            // 按照C端和B端分组，并按销量排序
+            channelSummaries.sort((a, b) => {
+                if (a.isTotal) return -1;
+                if (b.isTotal) return 1;
+                if (a.channel === "C端汇总") return -1;
+                if (b.channel === "C端汇总") return 1;
+                if (a.channel === "B端汇总") return a.channelType === "B端" ? -1 : 1;
+                if (b.channel === "B端汇总") return b.channelType === "B端" ? 1 : -1;
+                if (a.channelType !== b.channelType) return a.channelType === "C端" ? -1 : 1;
+                return b.sales2025 - a.sales2025;
+            });
+            
+            let html = '<table>';
+            html += '<tr><th>渠道</th><th>2024年销量</th><th>2024年占比</th><th>2025年销量</th><th>2025年占比</th><th>占比变化</th><th>同比变化</th><th>同比变化率</th></tr>';
+            
+            for (const summary of channelSummaries) {
+                const yoyClass = summary.yoyChange >= 0 ? 'positive' : 'negative';
+                const shareChangeClass = parseFloat(summary.shareChange) >= 0 ? 'positive' : 'negative';
+                const rowClass = summary.isType ? 'channel-type' : (summary.isTotal ? 'bold-row' : '');
+                
+                html += `
+                    <tr class="${rowClass}">
+                        <td>${summary.channel}</td>
+                        <td>${summary.sales2024 !== null ? summary.sales2024.toLocaleString() : '-'}</td>
+                        <td>${summary.share2024}</td>
+                        <td>${summary.sales2025 !== null ? summary.sales2025.toLocaleString() : '-'}</td>
+                        <td>${summary.share2025}</td>
+                        <td class="${shareChangeClass}">${summary.shareChange}</td>
+                        <td class="${yoyClass}">${summary.yoyChange.toLocaleString()}</td>
+                        <td class="${yoyClass}">${summary.yoyRate}</td>
+                    </tr>
+                `;
+            }
+            
+            html += '</table>';
+            tableDiv.innerHTML = html;
+        };
+
+        // 用于渲染系列选择器
+        const renderSeriesSelector = () => {
+            const selectorDiv = document.getElementById('trend-series-selector');
+            const selectedChannel = document.getElementById('trend-channel-select').value;
+            
+            // 获取所选渠道的所有产品系列
+            const channelData = data.filter(d => d.channel === selectedChannel && d.category !== "渠道合计");
+            
+            let html = '';
+            
+            // 为每个系列创建复选框
+            channelData.forEach(item => {
+                const displayName = seriesNameMap[item.category] || item.category;
+                
+                // 2024年复选框
+                const id2024 = `${item.category}-2024`;
+                const checked2024 = selectedSeriesState[id2024] ? 'checked' : '';
+                
+                html += `
+                    <label class="series-label">
+                        <input type="checkbox" class="series-checkbox" data-series="${item.category}" data-year="2024" ${checked2024}>
+                        2024年 ${displayName}
+                    </label>
+                `;
+                
+                // 2025年复选框
+                const id2025 = `${item.category}-2025`;
+                const checked2025 = selectedSeriesState[id2025] ? 'checked' : '';
+                
+                html += `
+                    <label class="series-label">
+                        <input type="checkbox" class="series-checkbox" data-series="${item.category}" data-year="2025" ${checked2025}>
+                        2025年 ${displayName}
+                    </label>
+                `;
+            });
+            
+            selectorDiv.innerHTML = html;
+            
+            // 添加事件监听
+            document.querySelectorAll('.series-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const series = this.getAttribute('data-series');
+                    const year = this.getAttribute('data-year');
+                    const id = `${series}-${year}`;
+                    
+                    // 更新选择状态
+                    selectedSeriesState[id] = this.checked;
+                    
+                    // 重新渲染图表
+                    renderTrendChart();
+                });
+            });
+        };
+
+        // 2. 销售趋势图表 - 记住并显示用户选择的系列
+        const renderTrendChart = () => {
+            const chartDom = document.getElementById('trend-chart');
+            const myChart = echarts.getInstanceByDom(chartDom) || echarts.init(chartDom);
+            
+            const selectedChannel = document.getElementById('trend-channel-select').value;
+            
+            // 获取所选渠道的所有产品系列数据
+            const channelData = data.filter(d => d.channel === selectedChannel && d.category !== "渠道合计");
+            
+            if (channelData.length === 0) {
+                chartDom.innerHTML = '没有找到产品系列数据';
+                return;
+            }
+            
+            // 准备图表数据
+            const series = [];
+            const xAxisData = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+            const colors = ['#5470c6', '#91cc75', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4'];
+            
+            // 为每个系列添加24年和25年的数据线（但只添加被选中的系列）
+            channelData.forEach((item, index) => {
+                const displayName = seriesNameMap[item.category] || item.category;
+                const baseColor = colors[index % colors.length];
+                
+                const id2024 = `${item.category}-2024`;
+                const id2025 = `${item.category}-2025`;
+                
+                if (selectedSeriesState[id2024]) {
+                    series.push({
+                        name: `2024年 ${displayName}`,
+                        type: 'line',
+                        smooth: true,
+                        data: item.values2024.slice(0, 10),
+                        itemStyle: {
+                            color: baseColor
+                        }
+                    });
+                }
+                
+                if (selectedSeriesState[id2025]) {
+                    series.push({
+                        name: `2025年 ${displayName}`,
+                        type: 'line',
+                        smooth: true,
+                        data: item.values2025.slice(0, 10),
+                        itemStyle: {
+                            color: baseColor
+                        },
+                        lineStyle: {
+                            type: 'dashed'
+                        }
+                    });
+                }
+            });
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: series.map(s => s.name),
+                    type: 'scroll',
+                    bottom: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    top: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: xAxisData,
+                    name: '时间周期',
+                    axisLabel: {
+                        formatter: function(value) {
+                            return value;
+                        },
+                        interval: 0
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '销量'
+                },
+                series: series
+            };
+            
+            myChart.setOption(option, true);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        };
+
+        // 3. 更新同比分析汇总信息
+        const updateCompareSummary = () => {
+            const selectedChannel = document.getElementById('compare-channel-select').value;
+            const selectedProduct = document.getElementById('compare-product-select').value;
+            
+            // 获取所选渠道和产品系列的数据
+            const itemData = data.find(d => d.channel === selectedChannel && d.category === selectedProduct);
+            
+            if (!itemData) {
+                document.getElementById('compare-summary').innerHTML = '没有找到匹配的数据';
+                return;
+            }
+            
+            const sales2024 = itemData.values2024[10] || 0;
+            const sales2025 = itemData.values2025[10] || 0;
+            const yoyChange = sales2025 - sales2024;
+            const yoyRate = sales2024 ? ((yoyChange / sales2024) * 100).toFixed(2) + "%" : "-";
+            const yoyClass = yoyChange >= 0 ? 'positive' : 'negative';
+            
+            let html = `
+                <div class="summary-item">
+                    <div class="summary-label">2024年总销量</div>
+                    <div class="summary-value">${sales2024.toLocaleString()}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">2025年总销量</div>
+                    <div class="summary-value">${sales2025.toLocaleString()}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">同比变化</div>
+                    <div class="summary-value class="${yoyClass}">${yoyChange.toLocaleString()}</div>
+                    <div class="summary-change class="${yoyClass}">${yoyRate}</div>
+                </div>
+            `;
+            
+            document.getElementById('compare-summary').innerHTML = html;
+        };
+
+        // 4. 同比分析图表 - 添加时间标签
+        const renderCompareChart = () => {
+            const chartDom = document.getElementById('compare-chart');
+            const myChart = echarts.getInstanceByDom(chartDom) || echarts.init(chartDom);
+            
+            const selectedChannel = document.getElementById('compare-channel-select').value;
+            const selectedProduct = document.getElementById('compare-product-select').value;
+            
+            // 获取所选渠道和产品系列的数据
+            const itemData = data.find(d => d.channel === selectedChannel && d.category === selectedProduct);
+            
+            if (!itemData) {
+                chartDom.innerHTML = '没有找到匹配的数据';
+                return;
+            }
+            
+            // 获取周期标签
+            const { period2024, period2025 } = getPeriodLabels();
+            
+            // 准备图表数据
+            const xAxisData = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+            const values2024 = itemData.values2024.slice(0, 10);
+            const values2025 = itemData.values2025.slice(0, 10);
+            
+            // 计算同比变化率
+            const yoyRates = [];
+            for (let i = 0; i < 10; i++) {
+                if (values2024[i] && values2025[i] && values2024[i] !== 0) {
+                    yoyRates.push(((values2025[i] - values2024[i]) / values2024[i] * 100).toFixed(2));
+                } else {
+                    yoyRates.push(null);
+                }
+            }
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross',
+                        crossStyle: {
+                            color: '#999'
+                        }
+                    },
+                    formatter: function(params) {
+                        let result = params[0].name + '<br/>';
+                        for (let i = 0; i < params.length; i++) {
+                            const param = params[i];
+                            result += param.marker + param.seriesName + ': ' + param.value + '<br/>';
+                            
+                            // 添加同比变化信息
+                            if (i === 0 && params.length > 1) {
+                                const idx = parseInt(param.name) - 1;
+                                const v2024 = values2024[idx];
+                                const v2025 = values2025[idx];
+                                
+                                if (v2024 && v2025) {
+                                    const change = v2025 - v2024;
+                                    const rate = ((change / v2024) * 100).toFixed(2);
+                                    const changeClass = change >= 0 ? 'positive' : 'negative';
+                                    
+                                    result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${change >= 0 ? '#27ae60' : '#e74c3c'};"></span>`;
+                                    result += `同比变化: ${change} (${rate}%)<br/>`;
+                                }
+                            }
+                        }
+                        return result;
+                    }
+                },
+                legend: {
+                    data: ['2024年', '2025年', '同比变化率(%)'],
+                    bottom: 0
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    top: '3%',
+                    containLabel: true
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        data: xAxisData,
+                        axisPointer: {
+                            type: 'shadow'
+                        },
+                        axisLabel: {
+                            formatter: function(value) {
+                                return value;
+                            },
+                            interval: 0
+                        }
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '销量',
+                        position: 'left'
+                    },
+                    {
+                        type: 'value',
+                        name: '同比变化率(%)',
+                        position: 'right',
+                        axisLabel: {
+                            formatter: '{value}%'
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: '2024年',
+                        type: 'bar',
+                        barWidth: '25%',
+                        data: values2024,
+                        itemStyle: {
+                            color: '#5470c6'
+                        }
+                    },
+                    {
+                        name: '2025年',
+                        type: 'bar',
+                        barWidth: '25%',
+                        data: values2025,
+                        itemStyle: {
+                            color: '#91cc75'
+                        }
+                    },
+                    {
+                        name: '同比变化率(%)',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: yoyRates,
+                        label: {
+                            show: true,
+                            formatter: '{c}%',
+                            position: 'top'
+                        },
+                        lineStyle: {
+                            width: 2
+                        },
+                        itemStyle: {
+                            color: function(params) {
+                                return params.value >= 0 ? '#27ae60' : '#e74c3c';
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option, true);
+            
+            // 添加时间说明标签
+            const periodLabelsDiv = document.getElementById('period-labels');
+            let labelsHtml = '';
+            
+            for (let i = 0; i < 10; i++) {
+                const p2024 = period2024[i];
+                const p2025 = period2025[i];
+                
+                if (i === 0) {
+                    labelsHtml += `<div class="period-label"><strong>${i+1}</strong><br>${p2024}<br>${p2025}</div>`;
+                } else {
+                    labelsHtml += `<div class="period-label"><strong>${i+1}</strong><br>${p2024.substring(2)}<br>${p2025.substring(2)}</div>`;
+                }
+            }
+            
+            periodLabelsDiv.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-top:10px; padding:0 3%;">
+                    ${labelsHtml}
+                </div>
+            `;
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        };
+
+        // 5. 渲染渠道详细分析标签页 - 修复图表不显示的问题
+        const renderChannelTabs = () => {
+            const tabsContainer = document.getElementById('channel-tabs');
+            const tabContents = document.getElementById('channel-tab-contents');
+            
+            // 获取所有渠道（不包括渠道汇总）
+            const channels = [...new Set(data.map(d => d.channel))].filter(c => c !== "渠道汇总");
+            
+            let tabsHtml = '';
+            let contentsHtml = '';
+            
+            // 为每个渠道创建标签和内容容器
+            channels.forEach((channel, index) => {
+                const isActive = index === 0 ? 'active' : '';
+                const sanitizedId = channel.replace(/\s+/g, '-').toLowerCase();
+                
+                tabsHtml += `<div class="tab ${isActive}" data-tab="${sanitizedId}">${channel}</div>`;
+                
+                // 简化的HTML结构
+                contentsHtml += `
+                    <div class="tab-content ${isActive}" id="${sanitizedId}">
+                        <div class="chart-container" style="margin-bottom:20px;">
+                            <h3 class="chart-title">${channel}各产品系列销量对比</h3>
+                            <div id="detail-chart-${sanitizedId}" style="width:100%; height:400px; border:1px solid #eee;"></div>
+                        </div>
+                        
+                        <div class="data-table-container">
+                            <h3 class="table-title">${channel}销量明细</h3>
+                            <div id="detail-table-${sanitizedId}"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            tabsContainer.innerHTML = tabsHtml;
+            tabContents.innerHTML = contentsHtml;
+            
+            // 为每个标签添加点击事件
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有标签的active类
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    
+                    // 添加当前标签的active类
+                    this.classList.add('active');
+                    
+                    // 隐藏所有内容
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // 显示对应内容
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // 确保立即渲染图表
+                    renderChannelDetailChart(tabId);
+                });
+            });
+            
+            // 初始渲染第一个渠道的图表和表格
+            const firstChannel = channels[0];
+            const firstTabId = firstChannel.replace(/\s+/g, '-').toLowerCase();
+            renderChannelDetailChart(firstTabId);
+            renderChannelDetailTable(firstChannel, firstTabId);
+        };
+
+        // 6. 渲染渠道详细图表 - 修复不显示问题
+        const renderChannelDetailChart = (tabId) => {
+            // 从tabId还原渠道名称
+            let channel;
+            if (tabId === 'pdd') {
+                channel = 'PDD';
+            } else if (tabId === 'tdi') {
+                channel = 'TDI';
+            } else {
+                // 尝试从tabId恢复原始渠道名
+                const possibleChannels = [...new Set(data.map(d => d.channel))].filter(c => c !== "渠道汇总");
+                const matchedChannel = possibleChannels.find(c => c.replace(/\s+/g, '-').toLowerCase() === tabId);
+                channel = matchedChannel || tabId;
+            }
+            
+            // 获取当前渠道的所有产品系列数据
+            const channelData = data.filter(d => d.channel === channel && d.category !== "渠道合计");
+            
+            // 确保元素存在
+            const chartId = `detail-chart-${tabId}`;
+            const chartDom = document.getElementById(chartId);
+            
+            if (!chartDom) {
+                console.error(`找不到图表元素: ${chartId}`);
+                return;
+            }
+            
+            try {
+                // 强制销毁已存在的图表实例
+                echarts.dispose(chartDom);
+                
+                // 创建新的图表实例
+                const myChart = echarts.init(chartDom);
+                
+                // 准备数据 - 使用简单的柱状图以确保渲染成功
+                const categories = [];
+                const series2024 = [];
+                const series2025 = [];
+                
+                channelData.forEach(item => {
+                    const displayName = seriesNameMap[item.category] || item.category;
+                    categories.push(displayName);
+                    
+                    series2024.push(item.values2024[10] || 0);
+                    series2025.push(item.values2025[10] || 0);
+                });
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {
+                        data: ['2024年', '2025年'],
+                        bottom: 0
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '15%',
+                        top: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: categories
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '销量'
+                    },
+                    series: [
+                        {
+                            name: '2024年',
+                            type: 'bar',
+                            barWidth: '30%',
+                            barGap: '5%',
+                            data: series2024,
+                            itemStyle: {
+                                color: '#5470c6'
+                            },
+                            label: {
+                                show: true,
+                                position: 'top'
+                            }
+                        },
+                        {
+                            name: '2025年',
+                            type: 'bar',
+                            barWidth: '30%',
+                            data: series2025,
+                            itemStyle: {
+                                color: '#91cc75'
+                            },
+                            label: {
+                                show: true,
+                                position: 'top'
+                            }
+                        }
+                    ]
+                };
+                
+                // 设置图表配置
+                myChart.setOption(option);
+                
+                // 确保图表显示
+                setTimeout(() => {
+                    if (myChart) {
+                        myChart.resize();
+                    }
+                }, 100);
+            } catch (error) {
+                console.error(`渲染图表出错 (${channel}):`, error);
+                chartDom.innerHTML = `<div style="color: red; padding: 20px; text-align: center;">图表渲染失败: ${error.message}</div>`;
+            }
+            
+            // 渲染表格
+            renderChannelDetailTable(channel, tabId);
+        };
+
+        // 7. 渲染渠道详细表格
+        const renderChannelDetailTable = (channel, tabId) => {
+            const tableId = `detail-table-${tabId}`;
+            const tableDiv = document.getElementById(tableId);
+            
+            if (!tableDiv) {
+                console.error(`找不到表格元素: ${tableId}`);
+                return;
+            }
+            
+            // 获取当前渠道的所有产品系列数据
+            const channelData = data.filter(d => d.channel === channel);
+            
+            let html = '<table>';
+            html += '<tr><th>产品系列</th><th>2024年销量</th><th>2025年销量</th><th>同比变化</th><th>同比变化率</th></tr>';
+            
+            // 先渲染渠道合计行
+            const totalData = channelData.find(d => d.category === "渠道合计");
+            if (totalData) {
+                const sales2024 = totalData.values2024[10];
+                const sales2025 = totalData.values2025[10];
+                const yoyChange = sales2025 - sales2024;
+                const yoyRate = sales2024 ? ((yoyChange / sales2024) * 100).toFixed(2) + "%" : "-";
+                const yoyClass = yoyChange >= 0 ? 'positive' : 'negative';
+                
+                html += `
+                    <tr class="bold-row">
+                        <td><strong>渠道合计</strong></td>
+                        <td>${sales2024 !== null ? sales2024.toLocaleString() : '-'}</td>
+                        <td>${sales2025 !== null ? sales2025.toLocaleString() : '-'}</td>
+                        <td class="${yoyClass}">${yoyChange.toLocaleString()}</td>
+                        <td class="${yoyClass}">${yoyRate}</td>
+                    </tr>
+                `;
+            }
+            
+            // 再渲染各产品系列行
+            for (const item of channelData.filter(d => d.category !== "渠道合计")) {
+                const sales2024 = item.values2024[10];
+                const sales2025 = item.values2025[10];
+                let yoyChange = '-';
+                let yoyRate = '-';
+                let yoyClass = '';
+                
+                if (sales2024 !== null && sales2025 !== null) {
+                    yoyChange = sales2025 - sales2024;
+                    yoyRate = sales2024 ? ((yoyChange / sales2024) * 100).toFixed(2) + "%" : "-";
+                    yoyClass = yoyChange >= 0 ? 'positive' : 'negative';
+                }
+                
+                const displayName = seriesNameMap[item.category] || item.category;
+                
+                html += `
+                    <tr>
+                        <td>${displayName}</td>
+                        <td>${sales2024 !== null ? sales2024.toLocaleString() : '-'}</td>
+                        <td>${sales2025 !== null ? sales2025.toLocaleString() : '-'}</td>
+                        <td class="${yoyClass}">${yoyChange !== '-' ? yoyChange.toLocaleString() : '-'}</td>
+                        <td class="${yoyClass}">${yoyRate}</td>
+                    </tr>
+                `;
+            }
+            
+            html += '</table>';
+            tableDiv.innerHTML = html;
+        };
+
+        // 渲染所有渠道详细图表和表格
+        const renderAllChannelDetails = () => {
+            const channels = [...new Set(data.map(d => d.channel))].filter(c => c !== "渠道汇总");
+            
+            for (const channel of channels) {
+                const tabId = channel.replace(/\s+/g, '-').toLowerCase();
+                renderChannelDetailChart(tabId);
+                renderChannelDetailTable(channel, tabId);
+            }
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 渲染汇总表格
+            renderSummaryTable();
+            
+            // 生成系列选择器
+            renderSeriesSelector();
+            
+            // 渲染销售趋势图表
+            renderTrendChart();
+            
+            // 渲染同比分析汇总信息
+            updateCompareSummary();
+            
+            // 渲染同比分析图表
+            renderCompareChart();
+            
+            // 渲染渠道标签页
+            renderChannelTabs();
+            
+            // 添加事件监听
+            document.getElementById('trend-channel-select').addEventListener('change', function() {
+                renderSeriesSelector();
+                renderTrendChart();
+            });
+            
+            document.getElementById('compare-channel-select').addEventListener('change', function() {
+                updateCompareSummary();
+                renderCompareChart();
+            });
+            
+            document.getElementById('compare-product-select').addEventListener('change', function() {
+                updateCompareSummary();
+                renderCompareChart();
+            });
+        });
+
+        // 使用页面完全加载事件确保所有内容加载完毕
+        window.addEventListener('load', function() {
+            console.log("Window loaded");
+            
+            // 确保所有图表都被正确初始化
+            setTimeout(function() {
+                renderAllChannelDetails();
+                
+                // 尝试确保第一个渠道的图表显示
+                const channels = [...new Set(data.map(d => d.channel))].filter(c => c !== "渠道汇总");
+                if (channels.length > 0) {
+                    const firstTabId = channels[0].replace(/\s+/g, '-').toLowerCase();
+                    const chartDom = document.getElementById(`detail-chart-${firstTabId}`);
+                    if (chartDom) {
+                        renderChannelDetailChart(firstTabId);
+                    }
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>
